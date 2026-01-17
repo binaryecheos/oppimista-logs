@@ -1,27 +1,50 @@
 import numpy as np
-from loss import LossFunction
 from optim import GradientDescent
+from loss import LossFunction
 
+np.random.seed(42)
 
-# Linear Regression
-X = np.random.randn(100, 1)
-y = 3 * X.flatten() + 1 + 0.1 * np.random.randn(100)
+# toy binary data
+n = 200
+X = np.random.randn(n, 2)
+true_theta = np.array([-0.5, 2.0, -1.0])
 
-# Batch GD
-theta_batch = GradientDescent.batch(
-    X, y, 
-    LossFunction.squared_error,
-    LossFunction.squared_error_gradient,
-    lr=0.01
+Xb = np.c_[np.ones((n, 1)), X]
+logits = Xb @ true_theta
+probs = LossFunction.sigmoid(logits)
+y = (probs > 0.5).astype(int)
+
+# Newton's method
+theta_newton = GradientDescent.newton_logistic(X, y, n_iters=10)
+
+# Compare with GD
+theta_gd = GradientDescent.batch(
+    X,
+    y,
+    loss_fn=LossFunction.logistic_loss,
+    loss_grad_fn=lambda y_pred, y_true, Xb:
+        LossFunction.logistic_gradient(
+            LossFunction.sigmoid(y_pred), y_true, Xb
+        ),
+    lr=0.1,
+    n_iters=1000,
 )
 
-# SGD
-theta_sgd = GradientDescent.sgd(
-    X, y,
-    LossFunction.squared_error,
-    LossFunction.squared_error_gradient,
-    lr=0.01, batch_size=1
-)
+print("True θ   :", true_theta)
+print("Newton θ :", theta_newton)
+print("GD θ     :", theta_gd)
 
-print("Batch GD theta:", theta_batch)
-print("SGD theta:", theta_sgd)
+def add_bias(X):
+    return np.c_[np.ones((X.shape[0], 1)), X]
+
+def sigmoid(z):
+    return 1.0 / (1.0 + np.exp(-z))
+
+def predict(theta, X, threshold=0.5):
+    Xb = add_bias(X)
+    p = sigmoid(Xb @ theta)
+    return (p >= threshold).astype(int)
+
+print("Acc true θ   :", (predict(true_theta, X) == y).mean())
+print("Acc GD θ     :", (predict(theta_gd, X) == y).mean())
+print("Acc Newton θ :", (predict(theta_newton, X) == y).mean())

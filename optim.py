@@ -53,4 +53,44 @@ class GradientDescent:
         n = X.shape[0]
         return np.c_[np.ones((n, 1)), X]
     
+    @staticmethod
+    def newton_logistic(X, y, n_iters=20, tol=1e-6):
+        """
+        Newton's method for logistic regression.
+
+        θ^(t+1) = θ^(t) - H^{-1} ∇J(θ^(t))
+        where:
+            ∇J(θ) = (1/n) Xᵀ (hθ(x) - y)
+            H     = (1/n) Xᵀ R X
+            R     = diag(p_i (1 - p_i)), p_i = σ(θᵀ x_i)
+
+        X is (n, d) without bias; bias term is added inside.
+        """
+        Xb = GradientDescent._add_bias(X)     # (n, d+1)
+        n, d1 = Xb.shape
+        theta = np.zeros(d1)
+
+        for _ in range(n_iters):
+            theta_old = theta.copy()
+
+            z = Xb @ theta
+            p = LossFunction.sigmoid(z)
+
+            # gradient: (d+1,)
+            grad = Xb.T @ (p - y) / n
+
+            # Hessian: (d+1, d+1)
+            r = p * (1 - p)                   # shape (n,)
+            R = np.diag(r)
+            H = Xb.T @ R @ Xb / n
+
+            # Newton step: solve H Δθ = grad
+            step = np.linalg.solve(H, grad)
+            theta -= step
+
+            if np.linalg.norm(step) < tol:
+                break
+
+        return theta
+    
     
