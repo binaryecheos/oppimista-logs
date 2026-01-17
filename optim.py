@@ -1,4 +1,4 @@
-from loss_func import LossFunction
+from loss import LossFunction
 import numpy as np
 
 class GradientDescent:
@@ -52,3 +52,5 @@ class GradientDescent:
     def _add_bias(X):
         n = X.shape[0]
         return np.c_[np.ones((n, 1)), X]
+    
+    
