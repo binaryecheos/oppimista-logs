@@ -1,146 +1,159 @@
 # 📊 Probabilistic Linear Regression (Least Squares ↔ MLE)
 
-A clean, hands-on implementation of **Linear Regression** showing how  
+A clean, no-BS implementation of **Linear Regression** showing how  
 **least squares optimization** and **maximum likelihood estimation (MLE)**  
-are actually the *same thing* under Gaussian noise.
+are literally the *same thing* once you assume Gaussian noise.
 
-Built with **realistic noise** so it doesn’t look like a toy demo.
+Built with **high noise (σ² = 1.0)** so it actually feels real.
 
 ---
 
-## 👀 What’s this about?
+## 👀 What’s this repo?
 
-Linear regression is usually taught in two ways:
+Linear regression is usually taught in two parallel ways:
 
 - minimize squared error (optimization view)
-- maximize likelihood assuming Gaussian noise (probabilistic view)
+- maximize likelihood (probabilistic view)
 
-This repo shows:
-> **they land on the exact same solution**
+This repo shows that:
 
-and visualizes *why* that happens.
+> **they converge to the exact same parameters**
+
+…and visualizes *why*.
 
 ---
 
-## 🧪 Data Setup
+## 🧪 Data Generation
 
-Synthetic data generated from:
+We generate synthetic data from:
 
-\[
+$$
 y = \theta_0 + \theta_1 x + \varepsilon,
 \quad \varepsilon \sim \mathcal{N}(0, \sigma^2)
-\]
+$$
 
-**Ground truth:**
-- θ₀ (bias): `1.0`
-- θ₁ (slope): `3.0`
-- Noise variance σ²: `1.0` (intentionally high)
+**Ground truth setup:**
+- Bias (θ₀): `1.0`
+- Slope (θ₁): `3.0`
+- Noise variance (σ²): `1.0`
 - Samples: `100`
 
-Higher noise = more realistic scatter + visible uncertainty.
+Higher noise = more scatter, wider uncertainty, more realistic behavior.
 
 ---
 
 ## 📐 Least Squares (Normal Equation)
 
-We solve linear regression in closed form:
+We solve linear regression in closed form by minimizing squared error:
 
-\[
+$$
+J(\theta) = \frac{1}{2n} \sum_{i=1}^n (y^{(i)} - \theta^\top x^{(i)})^2
+$$
+
+The solution is:
+
+$$
 \hat{\theta} = (X^\top X)^{-1} X^\top y
-\]
+$$
 
-This:
-- minimizes squared error
-- recovers parameters close to ground truth
-- also turns out to be the MLE
+This gives:
+- the best linear fit (least squares)
+- parameters close to ground truth
+- the same solution as MLE (next section)
 
 ---
 
 ## 📉 Loss & Gradients
 
-The code explicitly defines:
-- squared error loss  
-- analytical gradient  
+The repo explicitly defines:
+- squared error loss
+- analytical gradient
 
-So it’s easy to extend this to:
+This makes it easy to extend later to:
 - Gradient Descent
 - SGD
-- momentum / Adam later
+- momentum / Adam
 
 ---
 
 ## 🎯 Probabilistic View (MLE)
 
-Assuming Gaussian noise:
+Assuming Gaussian observation noise:
 
-\[
+$$
 p(y \mid x; \theta)
 = \mathcal{N}(y; \theta^\top x, \sigma^2)
-\]
+$$
 
-Log-likelihood:
+The log-likelihood becomes:
 
-\[
+$$
 \ell(\theta)
 = -\frac{n}{2}\log(2\pi\sigma^2)
 - \frac{1}{2\sigma^2}\sum (y - X\theta)^2
-\]
+$$
 
-Maximizing this gives the **same θ** as least squares.
+Maximizing this gives the **same θ** as minimizing squared error.
+
+Different perspective, same math.
 
 ---
 
-## 🔍 Estimating Noise (σ²)
+## 🔍 Estimating Noise Variance
 
-Instead of cheating with the true noise, we estimate it:
+Instead of assuming σ² is known, we estimate it from data:
 
-\[
-\hat{\sigma}^2 = \frac{1}{n} \sum (y - X\hat{\theta})^2
-\]
+$$
+\hat{\sigma}^2
+= \frac{1}{n} \sum (y - X\hat{\theta})^2
+$$
 
-This matches how things work in real datasets.
+This matches how regression works in real datasets.
 
 ---
 
 ## 🌄 Cost vs Likelihood (Visual Proof)
 
-The repo visualizes:
+We visualize:
 - squared error surface \( J(\theta) \)
 - negative log-likelihood surface \( -\ell(\theta) \)
 
 Even with high noise:
 
-\[
-\arg\min J(\theta)
+$$
+\arg\min_\theta J(\theta)
 =
-\arg\max \ell(\theta)
-\]
+\arg\max_\theta \ell(\theta)
+$$
 
-Different math, same answer.
+Same optimum. Always.
 
 ---
 
-## 📏 Parameter Uncertainty
+## 📏 Parameter Uncertainty (Confidence Intervals)
 
-We compute **95% confidence intervals**:
+We compute approximate **95% confidence intervals** using:
 
-\[
-\text{Var}(\hat{\theta}) = \hat{\sigma}^2 (X^\top X)^{-1}
-\]
+$$
+\mathrm{Var}(\hat{\theta})
+= \hat{\sigma}^2 (X^\top X)^{-1}
+$$
 
-Higher noise ⇒ wider intervals ⇒ more honest uncertainty.
+Higher noise ⇒ wider intervals ⇒ honest uncertainty.
 
 ---
 
 ## 📈 Predictive Uncertainty
 
-The model also outputs **predictive intervals**, not just a single line.
+Predictions include uncertainty, not just a line:
 
-This shows:
-- where predictions are confident
-- where the model is guessing more
+$$
+\mathrm{Var}(y_* \mid x_*)
+= \hat{\sigma}^2
+\left(1 + x_*^\top (X^\top X)^{-1} x_*\right)
+$$
 
-Much closer to how regression is used in practice.
+This shows where the model is confident and where it’s guessing more.
 
 ---
 
@@ -154,7 +167,7 @@ Much closer to how regression is used in practice.
 
 ---
 
-## 🚀 Things you can extend next
+## 🚀 Possible Extensions
 
 - Gradient Descent / SGD
 - MAP estimation with priors
@@ -176,10 +189,10 @@ Much closer to how regression is used in practice.
 
 This repo is meant for:
 - ML fundamentals
-- intuition > formulas
+- intuition-first learning
 - interview prep
-- building blocks for probabilistic ML
+- probabilistic modeling foundations
 
 ---
 
-*Linear Regression, but actually explained.*
+*Linear Regression — explained like a human wrote it.*
