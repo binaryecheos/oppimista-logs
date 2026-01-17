@@ -1,161 +1,185 @@
-# 📊 Probabilistic Linear Regression (Deterministic & MLE View)
+# 📊 Probabilistic Linear Regression (Least Squares ↔ MLE)
 
-This directory demonstrates **Linear Regression** from both:
-- a **deterministic optimization** perspective (least squares), and  
-- a **probabilistic modeling** perspective (maximum likelihood estimation).
+A clean, hands-on implementation of **Linear Regression** showing how  
+**least squares optimization** and **maximum likelihood estimation (MLE)**  
+are actually the *same thing* under Gaussian noise.
 
-Using synthetic data with known parameters, we show that **minimizing squared error is equivalent to maximizing likelihood under Gaussian noise**.
-
----
-
-## 📌 Overview
-
-Linear regression can be derived in two equivalent ways:
-
-1. **Least Squares Optimization**  
-   Minimize the squared error loss between predictions and targets.
-
-2. **Maximum Likelihood Estimation (MLE)**  
-   Assume Gaussian noise in observations and maximize the log-likelihood.
-
-This project implements both approaches and **verifies their equivalence analytically and visually**.
+Built with **realistic noise** so it doesn’t look like a toy demo.
 
 ---
 
-## 🧪 Data Generation
+## 👀 What’s this about?
 
-The dataset is generated from a known linear model:
+Linear regression is usually taught in two ways:
+
+- minimize squared error (optimization view)
+- maximize likelihood assuming Gaussian noise (probabilistic view)
+
+This repo shows:
+> **they land on the exact same solution**
+
+and visualizes *why* that happens.
+
+---
+
+## 🧪 Data Setup
+
+Synthetic data generated from:
 
 \[
 y = \theta_0 + \theta_1 x + \varepsilon,
 \quad \varepsilon \sim \mathcal{N}(0, \sigma^2)
 \]
 
-**True parameters:**
-- Bias (θ₀): `1.0`
-- Slope (θ₁): `3.0`
-- Noise variance (σ²): `0.01`
-- Number of samples: `100`
+**Ground truth:**
+- θ₀ (bias): `1.0`
+- θ₁ (slope): `3.0`
+- Noise variance σ²: `1.0` (intentionally high)
+- Samples: `100`
 
-This controlled setup allows direct comparison between learned and true parameters.
+Higher noise = more realistic scatter + visible uncertainty.
 
 ---
 
-## 📐 Deterministic View: Normal Equation
+## 📐 Least Squares (Normal Equation)
 
-The squared error objective is defined as:
-
-\[
-J(\theta) = \frac{1}{2n} \sum_{i=1}^n (y^{(i)} - \theta^\top x^{(i)})^2
-\]
-
-The closed-form minimizer is:
+We solve linear regression in closed form:
 
 \[
 \hat{\theta} = (X^\top X)^{-1} X^\top y
 \]
 
-This solution:
-- Minimizes the squared error
-- Recovers parameters close to the ground truth
-- Serves as a reference for probabilistic estimation
+This:
+- minimizes squared error
+- recovers parameters close to ground truth
+- also turns out to be the MLE
 
 ---
 
-## 📉 Loss Function & Gradient
+## 📉 Loss & Gradients
 
-The implementation explicitly defines:
-- Squared error cost function  
-- Analytical gradient of the loss  
+The code explicitly defines:
+- squared error loss  
+- analytical gradient  
 
-This bridges closed-form solutions with gradient-based optimization methods.
+So it’s easy to extend this to:
+- Gradient Descent
+- SGD
+- momentum / Adam later
 
 ---
 
-## 🎯 Probabilistic Model
+## 🎯 Probabilistic View (MLE)
 
-Assuming Gaussian noise leads to the likelihood:
+Assuming Gaussian noise:
 
 \[
-p(y^{(i)} \mid x^{(i)}; \theta)
-= \mathcal{N}(y^{(i)}; \theta^\top x^{(i)}, \sigma^2)
+p(y \mid x; \theta)
+= \mathcal{N}(y; \theta^\top x, \sigma^2)
 \]
 
-The log-likelihood is:
+Log-likelihood:
 
 \[
 \ell(\theta)
 = -\frac{n}{2}\log(2\pi\sigma^2)
-- \frac{1}{2\sigma^2}\sum_{i=1}^n (y^{(i)} - \theta^\top x^{(i)})^2
+- \frac{1}{2\sigma^2}\sum (y - X\theta)^2
 \]
 
-Maximizing this expression yields the **Maximum Likelihood Estimator (MLE)**.
+Maximizing this gives the **same θ** as least squares.
 
 ---
 
-## 🔍 Likelihood Evaluation
+## 🔍 Estimating Noise (σ²)
 
-The log-likelihood is evaluated for:
-- Random parameters
-- True generating parameters
-- Parameters obtained from the normal equation
-
-Results show that the likelihood is maximized near the normal-equation solution, confirming theoretical expectations.
-
----
-
-## 🌄 Likelihood & Cost Landscapes
-
-To build geometric intuition, the project visualizes:
-- Log-likelihood as a function of individual parameters
-- Squared error cost surface \( J(\theta) \)
-- Negative log-likelihood surface \( -\ell(\theta) \)
-
-Both surfaces reach their optimum at the same parameter values.
+Instead of cheating with the true noise, we estimate it:
 
 \[
-\arg\min_\theta J(\theta)
-=
-\arg\max_\theta \ell(\theta)
+\hat{\sigma}^2 = \frac{1}{n} \sum (y - X\hat{\theta})^2
 \]
 
----
-
-## ✅ Key Takeaways
-
-- Least squares and MLE lead to the **same optimal parameters**
-- The normal equation provides both the LS solution and the MLE
-- Loss and likelihood surfaces offer clear geometric intuition
-- Linear regression forms the foundation for more advanced models
+This matches how things work in real datasets.
 
 ---
 
-## 🚀 Possible Extensions
+## 🌄 Cost vs Likelihood (Visual Proof)
 
-- Estimate noise variance σ² via MLE  
-- Implement Gradient Descent / SGD  
-- MAP estimation with Gaussian priors  
-- Higher-dimensional feature spaces  
-- Logistic regression and generalized linear models  
+The repo visualizes:
+- squared error surface \( J(\theta) \)
+- negative log-likelihood surface \( -\ell(\theta) \)
 
----
+Even with high noise:
 
-## 🛠️ Requirements
+\[
+\arg\min J(\theta)
+=
+\arg\max \ell(\theta)
+\]
 
-- Python 3.x  
-- NumPy  
-- Matplotlib  
-
----
-
-## 📅 Notes
-
-This implementation is intended for:
-- Learning and intuition-building  
-- Academic coursework  
-- Interview preparation  
-- Foundations for probabilistic ML models  
+Different math, same answer.
 
 ---
 
-*Linear Regression — Deterministic Optimization meets Probabilistic Modeling.*
+## 📏 Parameter Uncertainty
+
+We compute **95% confidence intervals**:
+
+\[
+\text{Var}(\hat{\theta}) = \hat{\sigma}^2 (X^\top X)^{-1}
+\]
+
+Higher noise ⇒ wider intervals ⇒ more honest uncertainty.
+
+---
+
+## 📈 Predictive Uncertainty
+
+The model also outputs **predictive intervals**, not just a single line.
+
+This shows:
+- where predictions are confident
+- where the model is guessing more
+
+Much closer to how regression is used in practice.
+
+---
+
+## ✅ Takeaways
+
+- Least squares = MLE under Gaussian noise
+- Noise doesn’t break theory, it exposes uncertainty
+- Confidence intervals matter
+- Predictive uncertainty matters more
+- Linear regression is deeper than it looks
+
+---
+
+## 🚀 Things you can extend next
+
+- Gradient Descent / SGD
+- MAP estimation with priors
+- Bayesian Linear Regression
+- Higher-dimensional features
+- Logistic regression
+
+---
+
+## 🛠️ Tech Stack
+
+- Python 3
+- NumPy
+- Matplotlib
+
+---
+
+## 📝 Notes
+
+This repo is meant for:
+- ML fundamentals
+- intuition > formulas
+- interview prep
+- building blocks for probabilistic ML
+
+---
+
+*Linear Regression, but actually explained.*
