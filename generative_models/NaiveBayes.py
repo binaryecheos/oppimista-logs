@@ -1,5 +1,3 @@
-# naive_bayes.py
-
 import numpy as np
 
 
