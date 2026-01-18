@@ -57,4 +57,16 @@ class LossFunction:
         y_pred_proba = np.asarray(y_pred_proba)
         n = X.shape[0]
         return X.T @ (y_pred_proba - y_true) / n
+    
+    @staticmethod
+    def poisson_loss(mu, y_true):
+        """
+        Negative Poisson log-likelihood (up to constant):
+
+        J(theta) = (1/n) * sum_i [ mu_i - y_i * log(mu_i) ]
+        """
+        mu = np.clip(mu, 1e-12, None)
+        y_true = np.asarray(y_true)
+        n = y_true.size
+        return np.sum(mu - y_true * np.log(mu)) / n
 
