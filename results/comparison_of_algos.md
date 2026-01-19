@@ -246,4 +246,3 @@ Across datasets:
 4. Tree ensembles (RandomForest, XGBoost) are robust, powerful defaults for tabular data and handle non‑linearities and interactions with minimal preprocessing.[web:84][web:87][file:89]  
 5. MLPs are highly flexible but need more data and tuning; on small tabular datasets they are often matched or beaten by well‑tuned trees or GLMs.[file:75][file:76][file:89]
 
-Suggested path for this file: `results/comparison_of_classic_algos.md`
